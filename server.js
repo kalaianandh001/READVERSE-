@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * READVERSE — Autonomous Global News Intelligence Platform
- * server.js — Main Express Entry Point
+ * src/utils/database.js — MongoDB + Resilience Layer
  * ============================================================
  * Author: READVERSE Team
  * Node.js >= 18 required
@@ -11,175 +11,194 @@
 'use strict';
 
 // ── Core imports ──────────────────────────────────────────────
-const express       = require('express');
-const cors          = require('cors');
-const helmet        = require('helmet');
-const rateLimit     = require('express-rate-limit');
-const compression   = require('compression');
-const morgan        = require('morgan');
-const cron          = require('node-cron');
-const path          = require('path');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
-// ── Internal modules ──────────────────────────────────────────
-const { connectDB }         = require('./src/utils/database');
-const { initCache }         = require('./src/utils/cache');
-const aggregatorJob         = require('./src/aggregators/rssAggregator');
-const { getArticles }       = require('./src/routes/articles');
-const { getCategories }     = require('./src/routes/categories');
-const { getTrending }       = require('./src/routes/trending');
-const { getBreaking }       = require('./src/routes/breaking');
-const { authRouter }        = require('./src/routes/auth');
-const { bookmarkRouter }    = require('./src/routes/bookmarks');
-const { adminRouter }       = require('./src/routes/admin');
-const { searchRouter }      = require('./src/routes/search');
-const { digestRouter }      = require('./src/routes/digest');
-const errorHandler          = require('./src/middleware/errorHandler');
-const botDetect             = require('./src/middleware/botDetect');
+// ── Config ────────────────────────────────────────────────────
+const MAX_RETRIES        = parseInt(process.env.DB_MAX_RETRIES || '5', 10);
+const RETRY_DELAY_MS     = parseInt(process.env.DB_RETRY_DELAY || '5000', 10);
+const CONNECTION_TIMEOUT = parseInt(process.env.DB_TIMEOUT || '10000', 10);
 
-// ── App init ──────────────────────────────────────────────────
-const app  = express();
-const PORT = process.env.PORT || 3000;
-
-// ── Security middleware ────────────────────────────────────────
-app.use(helmet({
-  contentSecurityPolicy: false, // allow inline scripts in dev
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
-}));
-
-// ── CORS — allow frontend origins ─────────────────────────────
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:5500').split(',');
-app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    cb(new Error('CORS blocked: ' + origin));
-  },
-  credentials: true,
-}));
-
-// ── Rate limiting ─────────────────────────────────────────────
-const apiLimiter = rateLimit({
-  windowMs : 15 * 60 * 1000,  // 15 minutes
-  max      : 300,              // 300 requests per window
-  message  : { error: 'Too many requests. Please slow down.' },
-  standardHeaders: true,
-  legacyHeaders  : false,
-});
-app.use('/api/', apiLimiter);
-
-// ── General middleware ────────────────────────────────────────
-app.use(compression());
-app.use(express.json({ limit: '2mb' }));
-app.use(express.urlencoded({ extended: true }));
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
-app.use(botDetect);
-
-// ── Serve static frontend files ───────────────────────────────
-app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
-}));
-
-// ── Health check (for Render / Railway uptime pings) ─────────
-app.get('/health', (_req, res) => res.json({
-  status  : 'ok',
-  version : '2.0.0',
-  uptime  : Math.floor(process.uptime()),
-  time    : new Date().toISOString(),
-}));
-
-// ── API Routes ────────────────────────────────────────────────
-app.get('/api/articles',    getArticles);
-app.get('/api/categories',  getCategories);
-app.get('/api/trending',    getTrending);
-app.get('/api/breaking',    getBreaking);
-app.use('/api/auth',        authRouter);
-app.use('/api/bookmarks',   bookmarkRouter);
-app.use('/api/admin',       adminRouter);
-app.use('/api/search',      searchRouter);
-app.use('/api/digest',      digestRouter);
-
-// ── Sitemap (dynamic SEO) ─────────────────────────────────────
-app.get('/sitemap.xml', require('./src/routes/sitemap'));
-
-// ── Catch-all: serve frontend SPA ────────────────────────────
-app.get('*', (_req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// ── Global error handler ──────────────────────────────────────
-app.use(errorHandler);
-
-// ══════════════════════════════════════════════════════════════
-//  CRON JOBS — Self-updating news intelligence
-// ══════════════════════════════════════════════════════════════
+let retryCount = 0;
 
 /**
- * Every 15 minutes: fetch + aggregate RSS feeds from all sources.
- * This is the core autonomous loop that keeps READVERSE live.
+ * ============================================================
+ * Utility: Delay for retry logic
+ * ============================================================
  */
-cron.schedule('*/15 * * * *', async () => {
-  console.log('[CRON] 🔄 Aggregating RSS feeds...');
-  try {
-    await aggregatorJob.run();
-    console.log('[CRON] ✅ Feed refresh complete');
-  } catch (err) {
-    console.error('[CRON] ❌ Feed refresh error:', err.message);
-  }
-});
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 /**
- * Every 30 minutes: recalculate trending scores based on
- * view counts, time decay, and social signals.
+ * ============================================================
+ * Validate MongoDB URI
+ * ============================================================
  */
-cron.schedule('*/30 * * * *', async () => {
-  console.log('[CRON] 📈 Recalculating trending scores...');
-  try {
-    const { recalcTrending } = require('./src/engines/trendingEngine');
-    await recalcTrending();
-  } catch (err) {
-    console.error('[CRON] ❌ Trending error:', err.message);
+function validateMongoURI(uri) {
+  if (!uri) {
+    throw new Error('MONGO_URI is missing in environment variables');
   }
-});
+
+  if (
+    !uri.startsWith('mongodb://') &&
+    !uri.startsWith('mongodb+srv://')
+  ) {
+    throw new Error('Invalid MongoDB URI format');
+  }
+}
 
 /**
- * Daily at 6 AM IST (00:30 UTC): generate daily digest email summaries.
+ * ============================================================
+ * Connect to MongoDB
+ * ============================================================
  */
-cron.schedule('30 0 * * *', async () => {
-  console.log('[CRON] 📧 Generating daily digest...');
+async function connectDB() {
   try {
-    const { generateDigest } = require('./src/engines/digestEngine');
-    await generateDigest();
-  } catch (err) {
-    console.error('[CRON] ❌ Digest error:', err.message);
-  }
-});
+    const mongoURI = process.env.MONGO_URI;
 
-// ── Bootstrap ─────────────────────────────────────────────────
-async function bootstrap() {
-  try {
-    // 1. Connect to database
-    await connectDB();
-    console.log('[BOOT] ✅ Database connected');
+    // ── Validate URI ──────────────────────────────────────────
+    validateMongoURI(mongoURI);
 
-    // 2. Init in-memory cache
-    initCache();
-    console.log('[BOOT] ✅ Cache initialized');
+    console.log('[DB] 🌍 Connecting to MongoDB...');
 
-    // 3. Run first feed fetch immediately on start
-    console.log('[BOOT] 🚀 Running initial news fetch...');
-    await aggregatorJob.run();
-
-    // 4. Start HTTP server
-    app.listen(PORT, () => {
-      console.log(`[BOOT] 🌐 READVERSE running on http://localhost:${PORT}`);
-      console.log(`[BOOT] 🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+    // ── MongoDB Connection ────────────────────────────────────
+    await mongoose.connect(mongoURI, {
+      serverSelectionTimeoutMS : CONNECTION_TIMEOUT,
+      socketTimeoutMS          : 45000,
+      maxPoolSize              : 10,
+      autoIndex                : true,
     });
+
+    retryCount = 0;
+
+    console.log('[DB] ✅ MongoDB connected successfully');
+    console.log(`[DB] 📦 Host: ${mongoose.connection.host}`);
+    console.log(`[DB] 🗄️ Database: ${mongoose.connection.name}`);
+
+    /**
+     * ========================================================
+     * Connection Events
+     * ========================================================
+     */
+
+    mongoose.connection.on('connected', () => {
+      console.log('[DB] 🔗 MongoDB connection established');
+    });
+
+    mongoose.connection.on('disconnected', async () => {
+      console.warn('[DB] ⚠️ MongoDB disconnected');
+
+      if (retryCount < MAX_RETRIES) {
+        retryCount++;
+
+        console.log(
+          `[DB] 🔄 Retry attempt ${retryCount}/${MAX_RETRIES} in ${RETRY_DELAY_MS / 1000}s...`
+        );
+
+        await delay(RETRY_DELAY_MS);
+
+        return connectDB();
+      }
+
+      console.error('[DB] ❌ Max retry attempts reached');
+      process.exit(1);
+    });
+
+    mongoose.connection.on('reconnected', () => {
+      console.log('[DB] 🔄 MongoDB reconnected');
+    });
+
+    mongoose.connection.on('error', (err) => {
+      console.error('[DB] ❌ MongoDB runtime error:', err.message);
+    });
+
   } catch (err) {
-    console.error('[BOOT] 💥 Fatal startup error:', err);
+    console.error('[DB] ❌ MongoDB connection failed:', err.message);
+
+    if (retryCount < MAX_RETRIES) {
+      retryCount++;
+
+      console.log(
+        `[DB] 🔄 Retrying connection ${retryCount}/${MAX_RETRIES} in ${RETRY_DELAY_MS / 1000}s...`
+      );
+
+      await delay(RETRY_DELAY_MS);
+
+      return connectDB();
+    }
+
+    console.error('[DB] 💥 Fatal DB startup failure');
     process.exit(1);
   }
 }
 
-bootstrap();
+/**
+ * ============================================================
+ * Close MongoDB Gracefully
+ * ============================================================
+ */
+async function closeDB() {
+  try {
+    await mongoose.connection.close();
 
-module.exports = app; // for testing
+    console.log('[DB] 🛑 MongoDB connection closed gracefully');
+
+  } catch (err) {
+    console.error('[DB] ❌ Error closing MongoDB:', err.message);
+  }
+}
+
+/**
+ * ============================================================
+ * Health Check
+ * ============================================================
+ */
+function getDBStatus() {
+  return {
+    readyState : mongoose.connection.readyState,
+    host       : mongoose.connection.host || null,
+    name       : mongoose.connection.name || null,
+  };
+}
+
+/**
+ * ============================================================
+ * Process Termination Hooks
+ * ============================================================
+ */
+
+process.on('SIGINT', async () => {
+  console.log('[SYS] ⚠️ SIGINT received');
+  await closeDB();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('[SYS] ⚠️ SIGTERM received');
+  await closeDB();
+  process.exit(0);
+});
+
+process.on('uncaughtException', async (err) => {
+  console.error('[SYS] 💥 Uncaught Exception:', err.message);
+  await closeDB();
+  process.exit(1);
+});
+
+process.on('unhandledRejection', async (reason) => {
+  console.error('[SYS] 💥 Unhandled Rejection:', reason);
+  await closeDB();
+  process.exit(1);
+});
+
+/**
+ * ============================================================
+ * Exports
+ * ============================================================
+ */
+module.exports = {
+  connectDB,
+  closeDB,
+  getDBStatus,
+};
