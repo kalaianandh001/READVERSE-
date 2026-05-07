@@ -155,31 +155,32 @@ cron.schedule('30 0 * * *', async () => {
 });
 
 // ── Bootstrap ─────────────────────────────────────────────────
+// await connectDB();
+// initCache();
+// await aggregatorJob.run();
 async function bootstrap() {
   try {
-    // 1. Connect to database
-    await connectDB();
-    console.log('[BOOT] ✅ Database connected');
+    console.log('[BOOT] 🚀 Safe mode starting...');
 
-    // 2. Init in-memory cache
-    initCache();
-    console.log('[BOOT] ✅ Cache initialized');
+    // Database disabled temporarily
+    // await connectDB();
 
-    // 3. Run first feed fetch immediately on start
-    console.log('[BOOT] 🚀 Running initial news fetch...');
-    await aggregatorJob.run();
+    // Cache disabled temporarily
+    // initCache();
 
-    // 4. Start HTTP server
+    // Initial aggregator disabled temporarily
+    // await aggregatorJob.run();
+
     app.listen(PORT, () => {
-      console.log(`[BOOT] 🌐 READVERSE running on http://localhost:${PORT}`);
+      console.log(`[BOOT] 🌐 READVERSE running on port ${PORT}`);
       console.log(`[BOOT] 🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
+
   } catch (err) {
     console.error('[BOOT] 💥 Fatal startup error:', err);
     process.exit(1);
   }
 }
 
-bootstrap();
 
 module.exports = app; // for testing
