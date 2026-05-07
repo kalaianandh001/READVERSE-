@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="READVERSE — Your World. Summarized. Live global news, AI summaries, Tamil Nadu coverage.">
+<meta name="theme-color" content="#1a56db">
+<meta property="og:title" content="READVERSE — Your World. Summarized.">
+<meta property="og:type" content="website">
+<link rel="manifest" href="/manifest.json">
+<title>READVERSE — Your World. Summarized.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- JSON-LD Schema for Google Discover -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"READVERSE","url":"https://readverse.app","potentialAction":{"@type":"SearchAction","target":"https://readverse.app/?q={search_term_string}","query-input":"required name=search_term_string"}}
+</script>
+
+<style>
+/* ── RESET & TOKENS ─────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f5ff;--bg2:#fff;--bg3:#e8f0fe;--bg4:#dce8fd;
+  --text:#0d1b3e;--text2:#3a5080;--text3:#7a90b8;
+  --accent:#1a56db;--accent2:#1346c0;--accent-light:#e8f0fe;
+  --teal:#0ea5c7;--coral:#e05a3a;--purple:#6366f1;--green:#16a34a;
+  --border:rgba(26,86,219,.09);--border2:rgba(26,86,219,.18);
+  --card:#fff;--radius:14px;--radius-sm:8px;
+  --shadow:0 1px 4px rgba(26,86,219,.07),0 4px 16px rgba(26,86,219,.06);
+  --shadow-hover:0 4px 12px rgba(26,86,219,.13),0 8px 32px rgba(26,86,219,.1);
+  --api:http://localhost:3000;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
+body.dark{
+  --bg:#0b1020;--bg2:#111827;--bg3:#1e2a40;--bg4:#162035;
+  --text:#e2e8f8;--text2:#93a8cc;--text3:#546a8c;
+  --accent:#3b82f6;--accent2:#2563eb;--accent-light:#1e2a40;
+  --border:rgba(59,130,246,.12);--border2:rgba(59,130,246,.22);
+  --card:#111827;--shadow:0 2px 8px rgba(0,0,0,.3);--shadow-hover:0 6px 24px rgba(0,0,0,.4);
+}
+
+/* ── HEADER ─────────────────────────────────────────────── */
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 32px;border-bottom:1px solid var(--border2);background:var(--accent);position:sticky;top:0;z-index:200;gap:12px}
+.logo{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;letter-spacing:-1px;color:#fff;white-space:nowrap;cursor:pointer;user-select:none}
+.logo span{font-weight:300;font-size:10px;display:block;letter-spacing:4px;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,.6);margin-top:-3px;text-transform:uppercase}
+.header-center{flex:1;max-width:420px;margin:0 24px;position:relative}
+.search-input{width:100%;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;padding:9px 36px 9px 36px;border-radius:24px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:all .2s}
+.search-input::placeholder{color:rgba(255,255,255,.55)}
+.search-input:focus{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.45)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.65);font-size:14px;pointer-events:none}
+.voice-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.65);cursor:pointer;font-size:14px;padding:2px 5px;border-radius:50%;transition:all .2s}
+.voice-btn:hover,.voice-btn.listening{color:#fff;background:rgba(255,255,255,.2)}
+.voice-btn.listening{animation:pulse-ring 1s infinite}
+@keyframes pulse-ring{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.4)}50%{box-shadow:0 0 0 6px rgba(255,255,255,0)}}
+.header-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.hbtn{background:rgba(255,255,255,.15);color:#fff;font-size:12px;padding:7px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.25);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:all .2s;white-space:nowrap}
+.hbtn:hover{background:rgba(255,255,255,.25)}
+.hbtn.active-user{background:rgba(255,255,255,.25)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block;margin-right:4px;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── NAV ────────────────────────────────────────────────── */
+.nav{display:flex;gap:0;padding:0 32px;border-bottom:2px solid var(--border2);background:var(--bg2);overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-tab{padding:13px 16px;font-size:12.5px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif}
+.nav-tab:hover{color:var(--accent)}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab-badge{background:var(--accent);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;margin-left:4px;vertical-align:middle}
+.breaking-tab{color:var(--coral)!important}
+.breaking-tab.active{border-bottom-color:var(--coral)!important}
+
+/* ── TICKER ─────────────────────────────────────────────── */
+.ticker-bar{background:var(--accent);color:#fff;padding:8px 0;overflow:hidden}
+.ticker-inner{display:flex;align-items:center;animation:ticker 80s linear infinite;white-space:nowrap}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ticker-label{background:#fff;color:var(--accent);font-size:10px;font-weight:700;padding:3px 10px;border-radius:3px;margin-right:16px;letter-spacing:.5px;flex-shrink:0}
+.ticker-item{font-size:12px;padding:0 28px;opacity:.9;flex-shrink:0;cursor:pointer}
+.ticker-item:hover{opacity:1;text-decoration:underline}
+
+/* ── LAYOUT ─────────────────────────────────────────────── */
+.main-layout{display:grid;grid-template-columns:1fr 300px;max-width:1420px;margin:0 auto;min-height:calc(100vh - 110px)}
+.feed-col{padding:24px 28px;min-width:0}
+.sidebar-col{padding:22px 20px;border-left:1px solid var(--border2);background:var(--bg2);position:sticky;top:110px;height:fit-content;max-height:calc(100vh - 110px);overflow-y:auto;scrollbar-width:thin}
+
+/* ── BRIEF BAR ───────────────────────────────────────────── */
+.brief-bar{background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);border-radius:var(--radius);padding:18px 22px;margin-bottom:22px;box-shadow:var(--shadow)}
+.brief-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.brief-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:#93c5fd;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.brief-date{font-size:11px;color:rgba(255,255,255,.55);font-family:'JetBrains Mono',monospace}
+.brief-items{display:flex;flex-direction:column;gap:9px}
+.brief-item{display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:6px 8px;border-radius:8px;transition:background .2s}
+.brief-item:hover{background:rgba(255,255,255,.1)}
+.brief-num{font-size:11px;font-weight:700;color:#93c5fd;min-width:16px;padding-top:1px;font-family:'JetBrains Mono',monospace}
+.brief-text{font-size:13px;color:rgba(255,255,255,.85);line-height:1.5}
+
+/* ── CARDS ───────────────────────────────────────────────── */
+.cards-grid{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);padding:20px;transition:all .22s;position:relative;overflow:hidden;box-shadow:var(--shadow);animation:fadeUp .4s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--cat-color,var(--accent));opacity:0;transition:opacity .22s}
+.card:hover{box-shadow:var(--shadow-hover);border-color:rgba(26,86,219,.28);transform:translateY(-1px)}
+.card:hover::before{opacity:1}
+.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px}
+.cat-badge{font-size:10px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;padding:3px 10px;border-radius:20px;flex-shrink:0}
+.badge-breaking{background:#fee2e2;color:#991b1b;animation:badgePulse 1.5s infinite}
+@keyframes badgePulse{0%,100%{opacity:1}50%{opacity:.6}}
+.card-meta{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);flex-wrap:wrap;justify-content:flex-end}
+.card-img{width:100%;max-height:200px;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:12px;display:block}
+.card-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;line-height:1.35;margin-bottom:9px;color:var(--text);cursor:pointer;transition:color .2s;text-decoration:none;display:block}
+.card-title:hover{color:var(--accent)}
+.card-desc{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:14px}
+.card-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.action-btn{background:none;border:1px solid var(--border2);color:var(--text3);padding:6px 13px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif}
+.action-btn:hover{background:var(--accent-light);color:var(--accent);border-color:rgba(26,86,219,.3)}
+.action-btn.bookmarked{background:var(--accent);border-color:var(--accent);color:#fff}
+.action-btn.ai-btn{border-color:rgba(6,182,212,.35);color:var(--teal)}
+.action-btn.ai-btn:hover,.action-btn.ai-active{background:#ecfeff;border-color:rgba(6,182,212,.5);color:var(--teal)}
+.tts-btn{border-color:rgba(99,102,241,.35);color:var(--purple)}
+.tts-btn:hover,.tts-btn.playing{background:#ede9fe;border-color:rgba(99,102,241,.5);color:var(--purple)}
+.source-link{margin-left:auto;font-size:11px;color:var(--text3);text-decoration:none;transition:color .2s}
+.source-link:hover{color:var(--accent)}
+
+/* ── CREDIBILITY BADGE ───────────────────────────────────── */
+.cred-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+.cred-high{background:#d1fae5;color:#065f46}
+.cred-mid{background:#fef9c3;color:#713f12}
+.cred-low{background:#fee2e2;color:#991b1b}
+body.dark .cred-high{background:#064e3b;color:#6ee7b7}
+body.dark .cred-mid{background:#451a03;color:#fcd34d}
+body.dark .cred-low{background:#7f1d1d;color:#fca5a5}
+
+/* ── SENTIMENT DOT ───────────────────────────────────────── */
+.sent-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.sent-positive{background:#22c55e}
+.sent-negative{background:#ef4444}
+.sent-neutral{background:#94a3b8}
+
+/* ── AI PANEL ────────────────────────────────────────────── */
+.ai-panel{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid rgba(6,182,212,.25);border-radius:var(--radius-sm);padding:16px;margin-top:14px;animation:fadeIn .3s ease}
+body.dark .ai-panel{background:linear-gradient(135deg,#0c1a2e,#0f2040);border-color:rgba(6,182,212,.2)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.ai-panel-title{font-size:11px;font-weight:600;color:var(--teal);letter-spacing:.6px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ai-bullets{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.ai-bullet{display:flex;gap:8px;font-size:13px;color:#1e40af;line-height:1.5}
+body.dark .ai-bullet{color:#93c5fd}
+.ai-bullet-dot{color:var(--teal);font-weight:700;flex-shrink:0}
+.why-matters{margin-top:12px;padding-top:12px;border-top:1px solid rgba(6,182,212,.18)}
+.why-label{font-size:10px;font-weight:600;color:var(--coral);letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px}
+.why-text{font-size:13px;color:var(--text2);line-height:1.5;font-style:italic}
+.quick-read-box{background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid rgba(26,86,219,.18);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px}
+body.dark .quick-read-box{background:linear-gradient(135deg,#0f1f3d,#0a1628);border-color:rgba(59,130,246,.2)}
+.quick-read-label{font-size:10px;font-weight:600;color:var(--accent);letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px}
+.quick-read-text{font-size:14px;color:var(--text);line-height:1.6}
+
+/* ── SIDEBAR ─────────────────────────────────────────────── */
+.sidebar-section{margin-bottom:22px}
+.sidebar-title{font-family:'Playfair Display',serif;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border2)}
+.weather-card{background:linear-gradient(135deg,#1a56db,#0ea5e9);border-radius:var(--radius);padding:16px;color:#fff;margin-bottom:8px}
+.weather-loc{font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.weather-temp{font-size:38px;font-weight:700;font-family:'Playfair Display',serif;line-height:1}
+.weather-desc{font-size:13px;opacity:.85;margin-top:4px}
+.weather-meta{display:flex;gap:12px;margin-top:10px;border-top:1px solid rgba(255,255,255,.2);padding-top:10px}
+.weather-meta span{font-size:11px;opacity:.7}
+.weather-icon{font-size:32px;float:right;margin-top:-8px}
+.pref-tags{display:flex;flex-wrap:wrap;gap:6px}
+.pref-tag{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:var(--bg2);transition:all .2s}
+.pref-tag.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.pref-tag:hover:not(.active){background:var(--accent-light);color:var(--accent);border-color:rgba(26,86,219,.3)}
+.trending-list{display:flex;flex-direction:column;gap:8px}
+.trending-item{display:flex;gap:10px;cursor:pointer;padding:8px;border-radius:8px;transition:background .15s;border:1px solid var(--border)}
+.trending-item:hover{background:var(--bg3)}
+.trending-rank{font-size:11px;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace;min-width:16px;padding-top:1px}
+.trending-text{font-size:12px;color:var(--text2);line-height:1.4}
+
+/* ── STOCK WIDGET ────────────────────────────────────────── */
+.stock-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.stock-name{color:var(--text2);font-weight:500}
+.stock-up{color:#16a34a;font-weight:600}
+.stock-down{color:#dc2626;font-weight:600}
+
+/* ── SKELETON LOADERS ────────────────────────────────────── */
+.skeleton-card{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.skel{background:var(--bg3);border-radius:6px;animation:shimmer 1.5s ease infinite}
+@keyframes shimmer{0%,100%{opacity:.5}50%{opacity:.9}}
+.skel-h{height:14px;margin-bottom:8px}
+.skel-title{height:20px;width:80%;margin-bottom:10px}
+.skel-desc1{height:12px;width:100%;margin-bottom:6px}
+.skel-desc2{height:12px;width:70%}
+
+/* ── INFINITE SCROLL SPINNER ─────────────────────────────── */
+#loadMore{text-align:center;padding:20px;display:none}
+.spinner{width:28px;height:28px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── FILTERS ROW ─────────────────────────────────────────── */
+.filters-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px}
+.filters-row h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text)}
+.filter-controls{display:flex;align-items:center;gap:8px}
+.sort-select{background:var(--bg2);border:1px solid var(--border2);color:var(--text2);padding:7px 12px;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;outline:none}
+.refresh-btn{background:var(--bg2);border:1px solid var(--border2);color:var(--text2);padding:7px 12px;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.refresh-btn:hover{background:var(--accent-light);color:var(--accent)}
+
+/* ── MODAL ───────────────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.overlay.open{display:flex}
+.modal{background:var(--bg2);border-radius:20px;padding:36px;width:100%;max-width:440px;position:relative;animation:modalIn .3s ease;max-height:90vh;overflow-y:auto}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-close{position:absolute;top:16px;right:16px;background:var(--bg);border:1px solid var(--border2);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--text3)}
+.modal-logo{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:var(--accent);text-align:center;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--text3);text-align:center;margin-bottom:28px}
+.modal-tabs{display:flex;border:1px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:24px}
+.modal-tab{flex:1;padding:10px;font-size:13px;font-weight:500;text-align:center;cursor:pointer;background:none;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;transition:all .2s}
+.modal-tab.active{background:var(--accent);color:#fff}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;display:block}
+.form-input{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:11px 14px;border-radius:var(--radius-sm);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:all .2s}
+.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+.form-btn{width:100%;background:var(--accent);color:#fff;border:none;padding:13px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:4px}
+.form-btn:hover{background:var(--accent2)}
+.form-msg{font-size:12px;margin-top:10px;padding:10px 14px;border-radius:var(--radius-sm)}
+.form-msg.success{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+.form-msg.error{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+
+/* ── TOAST ───────────────────────────────────────────────── */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:1000;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--text);color:var(--bg2);padding:12px 18px;border-radius:var(--radius-sm);font-size:13px;animation:toastIn .3s ease;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.2);max-width:300px}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── EMPTY STATE ─────────────────────────────────────────── */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-icon{font-size:42px;margin-bottom:12px}
+.empty-title{font-size:15px;font-weight:500;margin-bottom:6px;color:var(--text2)}
+.empty-sub{font-size:13px}
+
+/* ── CATEGORY BADGE COLORS ───────────────────────────────── */
+.badge-tech{background:#ede9fe;color:#6d28d9}.badge-biz{background:#d1fae5;color:#065f46}
+.badge-sports{background:#fee2e2;color:#991b1b}.badge-health{background:#dcfce7;color:#14532d}
+.badge-ent{background:#fef9c3;color:#713f12}.badge-tn-local,.badge-tn{background:#fdf4ff;color:#7c3aed}
+.badge-world{background:#e0f2fe;color:#0369a1}.badge-science{background:#fefce8;color:#713f12}
+.badge-cricket{background:#fce7f3;color:#9d174d}.badge-crypto{background:#fff7ed;color:#c2410c}
+body.dark .badge-tech{background:#2d1b69;color:#c4b5fd}body.dark .badge-biz{background:#064e3b;color:#6ee7b7}
+body.dark .badge-sports{background:#7f1d1d;color:#fca5a5}body.dark .badge-health{background:#14532d;color:#86efac}
+body.dark .badge-ent{background:#451a03;color:#fcd34d}body.dark .badge-tn-local{background:#2d1b69;color:#d8b4fe}
+.trending-chip{background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;letter-spacing:.4px;margin-left:6px}
+.highlight{background:#fef08a;border-radius:2px;padding:0 2px}
+body.dark .highlight{background:#854d0e;color:#fef9c3}
+.read-time{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:3px}
+
+/* ── OFFLINE BANNER ──────────────────────────────────────── */
+.offline-banner{background:var(--coral);color:#fff;text-align:center;padding:8px;font-size:13px;display:none}
+body.offline .offline-banner{display:block}
+
+/* ── STATS GRID ──────────────────────────────────────────── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-box{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px;text-align:center}
+.stat-num{font-size:22px;font-weight:700;color:var(--accent);font-family:'Playfair Display',serif}
+.stat-lbl{font-size:10px;color:var(--text3);margin-top:2px;letter-spacing:.4px;text-transform:uppercase}
+
+/* ── SHARE POPUP ─────────────────────────────────────────── */
+.share-popup{position:absolute;bottom:100%;left:0;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px;box-shadow:var(--shadow-hover);z-index:100;min-width:180px;animation:fadeIn .2s ease}
+.share-option{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--text2);transition:all .2s;background:none;border:none;width:100%;font-family:'DM Sans',sans-serif}
+.share-option:hover{background:var(--accent-light);color:var(--accent)}
+
+/* ── RESPONSIVE ──────────────────────────────────────────── */
+@media(max-width:960px){
+  .main-layout{grid-template-columns:1fr}
+  .sidebar-col{border-left:none;border-top:1px solid var(--border2);position:static;max-height:none}
+  .header,.feed-col,.nav{padding-left:16px;padding-right:16px}
+  .header-center{display:none}
+  .card-title{font-size:15px}
+}
+@media(max-width:600px){
+  .filters-row{flex-wrap:wrap}
+  .modal{padding:24px}
+  .header{padding:10px 16px}
+}
+
+/* ── SCROLLBAR ───────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+
+<body>
+<!-- OFFLINE BANNER -->
+<div class="offline-banner">📵 You're offline — showing cached news</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- AUTH MODAL -->
+<div class="overlay" id="authOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-logo">READVERSE</div>
+    <div class="modal-sub">Your world. Summarized.</div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="loginTab" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="modal-tab" id="signupTab" onclick="switchAuthTab('signup')">Create Account</button>
+    </div>
+    <div id="loginForm">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="loginEmail" placeholder="you@example.com"></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="loginPass" placeholder="••••••••"></div>
+      <button class="form-btn" onclick="doLogin()">Sign In</button>
+      <div id="loginMsg"></div>
+    </div>
+    <div id="signupForm" style="display:none">
+      <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" type="text" id="signupName" placeholder="Your name"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="signupEmail" placeholder="you@example.com"></div>
+      <div class="form-group"><label class="form-label">Password (8+ chars)</label><input class="form-input" type="password" id="signupPass" placeholder="••••••••"></div>
+      <button class="form-btn" onclick="doSignup()">Create Account</button>
+      <div id="signupMsg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP ROOT -->
+<div id="app"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  READVERSE 2.0 — Live News Intelligence
+//  All static demo data replaced with live API calls.
+// ════════════════════════════════════════════════════════════
+
+// ── CONFIG ────────────────────────────────────────────────
+// Auto-detect API URL: same origin in production, localhost in dev
+const API = window.location.hostname === 'localhost'
+  ? 'http://localhost:3000/api'
+  : window.location.origin + '/api';
+
+// ── APP STATE ─────────────────────────────────────────────
+const state = {
+  articles     : [],
+  breakingTicker: [],
+  trendingList : [],
+  weather      : null,
+  activeTab    : 'All',
+  searchQuery  : '',
+  prefs        : JSON.parse(localStorage.getItem('rv_prefs') || '["Technology","Sports"]'),
+  bookmarks    : JSON.parse(localStorage.getItem('rv_bookmarks') || '[]'),
+  darkMode     : localStorage.getItem('rv_dark') === 'true',
+  lang         : localStorage.getItem('rv_lang') || 'en',
+  user         : JSON.parse(localStorage.getItem('rv_user') || 'null'),
+  token        : localStorage.getItem('rv_token') || '',
+  shareOpen    : null,
+  aiOpen       : {},
+  page         : 1,
+  hasMore      : true,
+  loading      : false,
+  sortMode     : 'time',
+  ttsArticle   : null,
+  categories   : [],
+  stats        : { total: 0, breaking: 0 },
+};
+
+// Apply dark mode immediately to avoid flash
+if (state.darkMode) document.body.classList.add('dark');
+
+// ── CATEGORIES & TABS ─────────────────────────────────────
+const TABS = ['All','My Feed','Breaking','Trending','Tamil Nadu','Technology','Business','Sports','Cricket','Health','Entertainment','World','Science','Crypto','Daily Brief','Bookmarks'];
+
+// ── TRANSLATIONS ──────────────────────────────────────────
+const T = {
+  'All':'அனைத்தும்','My Feed':'என் செய்திகள்','Daily Brief':'தினசரி சுருக்கம்',
+  'Bookmarks':'சேமித்தவை','Technology':'தொழில்நுட்பம்','Business':'வணிகம்',
+  'Sports':'விளையாட்டு','Health':'சுகாதாரம்','Entertainment':'பொழுதுபோக்கு',
+  'Tamil Nadu':'தமிழ்நாடு','World':'உலகம்','Science':'அறிவியல்',
+  'Breaking':'அவசர செய்தி','Trending':'பிரபலம்','Cricket':'கிரிக்கெட்',
+};
+const t = k => state.lang === 'ta' && T[k] ? T[k] : k;
+
+// ── CATEGORY BADGE CLASS MAP ──────────────────────────────
+const CAT_BADGE = {
+  Technology:'badge-tech',Business:'badge-biz',Sports:'badge-sports',
+  Health:'badge-health',Entertainment:'badge-ent','Tamil Nadu':'badge-tn-local',
+  World:'badge-world',Science:'badge-science',Cricket:'badge-cricket',
+  Crypto:'badge-crypto',Politics:'badge-world',General:'badge-world',
+};
+function badgeClass(cat) { return CAT_BADGE[cat] || 'badge-world'; }
+
+// ══════════════════════════════════════════════════════════
+//  API HELPERS
+// ══════════════════════════════════════════════════════════
+async function apiFetch(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
+  const res = await fetch(API + path, { headers, ...options });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+// ── Load articles from backend ───────────────────────────
+async function loadArticles(reset = false) {
+  if (state.loading) return;
+  if (!state.hasMore && !reset) return;
+
+  if (reset) { state.page = 1; state.articles = []; state.hasMore = true; }
+  state.loading = true;
+  if (reset) showSkeletons();
+
+  try {
+    const tab = state.activeTab;
+    let endpoint = `/articles?page=${state.page}&limit=20`;
+
+    // Map tabs to API params
+    if (tab === 'Breaking')     endpoint += '&tab=breaking';
+    else if (tab === 'Trending') endpoint += '&tab=trending';
+    else if (tab === 'Tamil Nadu') endpoint += '&tab=tn';
+    else if (tab === 'Daily Brief') endpoint += '&tab=all';
+    else if (!['All','My Feed','Bookmarks'].includes(tab)) endpoint += `&category=${encodeURIComponent(tab)}`;
+
+    if (state.sortMode === 'trending') endpoint += '&tab=trending';
+    if (state.lang === 'ta') endpoint += '&lang=ta';
+    if (state.searchQuery) endpoint = `/search?q=${encodeURIComponent(state.searchQuery)}&page=${state.page}`;
+
+    const data = await apiFetch(endpoint);
+    let arts = data.articles || [];
+
+    // Client-side filtering for My Feed
+    if (tab === 'My Feed') arts = arts.filter(a => state.prefs.includes(a.category));
+    // Bookmarks: use locally stored IDs merged with server data
+    if (tab === 'Bookmarks') arts = state.articles.filter(a => state.bookmarks.includes(a._id));
+
+    if (reset) state.articles = arts;
+    else state.articles = [...state.articles, ...arts];
+
+    state.hasMore = data.pagination?.hasNext ?? arts.length === 20;
+    state.page++;
+
+    render();
+  } catch (err) {
+    console.error('[APP] loadArticles error:', err);
+    if (reset) state.articles = getCachedArticles();
+    showToast('⚠️ Could not load live news. Showing cached stories.');
+    render();
+  } finally {
+    state.loading = false;
+    document.getElementById('loadMore').style.display = 'none';
+  }
+}
+
+// ── Offline cache helpers ─────────────────────────────────
+function getCachedArticles() {
+  try { return JSON.parse(localStorage.getItem('rv_cache') || '[]'); } catch { return []; }
+}
+function cacheArticles(arts) {
+  try { localStorage.setItem('rv_cache', JSON.stringify(arts.slice(0, 50))); } catch {}
+}
+
+// ── Load breaking for ticker ──────────────────────────────
+async function loadBreaking() {
+  try {
+    state.breakingTicker = await apiFetch('/breaking');
+  } catch { state.breakingTicker = []; }
+}
+
+// ── Load trending for sidebar ─────────────────────────────
+async function loadTrending() {
+  try {
+    state.trendingList = await apiFetch('/trending?limit=8');
+  } catch { state.trendingList = []; }
+}
+
+// ── Weather (free Open-Meteo, no API key) ─────────────────
+async function fetchWeather() {
+  navigator.geolocation?.getCurrentPosition(async ({ coords }) => {
+    try {
+      const { latitude: lat, longitude: lon } = coords;
+      const [weather, geo] = await Promise.all([
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m&timezone=auto`).then(r => r.json()),
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`).then(r => r.json()),
+      ]);
+      const cw = weather.current_weather;
+      const icons = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',51:'🌦',61:'🌧',80:'🌧',95:'⛈'};
+      const descs = {0:'Clear Sky',1:'Mostly Clear',2:'Partly Cloudy',3:'Overcast',45:'Foggy',51:'Light Drizzle',61:'Light Rain',80:'Rain Showers',95:'Thunderstorm'};
+      state.weather = {
+        temp: Math.round(cw.temperature),
+        desc: descs[cw.weathercode] || 'Current Weather',
+        loc: geo.address?.city || geo.address?.town || 'Your Location',
+        humidity: weather.hourly?.relativehumidity_2m?.[0] || '--',
+        wind: Math.round(cw.windspeed),
+        icon: icons[cw.weathercode] || '🌤',
+      };
+    } catch {
+      state.weather = {temp:'--',desc:'Weather unavailable',loc:'Chennai',humidity:'--',wind:'--',icon:'🌤'};
+    }
+    render();
+  }, () => {
+    state.weather = {temp:'30',desc:'Partly Cloudy',loc:'Chennai, TN',humidity:'72',wind:'14',icon:'⛅'};
+    render();
+  });
+}
+
+// ── Live stocks (free Yahoo Finance via allorigins proxy) ─
+async function fetchStocks() {
+  // Use a free proxy to avoid CORS. Replace with direct API if available.
+  const symbols = [
+    { name: 'SENSEX', sym: '^BSESN' },
+    { name: 'NIFTY 50', sym: '^NSEI' },
+    { name: 'USD/INR', sym: 'INR=X' },
+  ];
+  const quotes = [];
+  for (const s of symbols) {
+    try {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${s.sym}?interval=1d&range=1d`;
+      const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      const data = await fetch(proxy).then(r => r.json());
+      const price = data.chart?.result?.[0]?.meta?.regularMarketPrice;
+      const prev  = data.chart?.result?.[0]?.meta?.chartPreviousClose;
+      if (price) {
+        const change = ((price - prev) / prev * 100).toFixed(2);
+        quotes.push({ name: s.name, price: price.toLocaleString('en-IN'), change, up: change >= 0 });
+      }
+    } catch {}
+  }
+  state.stocks = quotes;
+  render();
+}
+
+// ══════════════════════════════════════════════════════════
+//  TEXT-TO-SPEECH (Browser Web Speech API — 100% free)
+// ══════════════════════════════════════════════════════════
+let ttsUtterance = null;
+
+function toggleTTS(articleId) {
+  const art = state.articles.find(a => (a._id || a.id) === articleId);
+  if (!art) return;
+
+  if (state.ttsArticle === articleId && speechSynthesis.speaking) {
+    speechSynthesis.cancel();
+    state.ttsArticle = null;
+    render();
+    return;
+  }
+
+  speechSynthesis.cancel();
+  const text = art.title + '. ' + (art.summary?.quickRead || art.description || '');
+  ttsUtterance = new SpeechSynthesisUtterance(text);
+  ttsUtterance.lang = art.language === 'ta' ? 'ta-IN' : 'en-IN';
+  ttsUtterance.rate = 0.9;
+  ttsUtterance.onend = () => { state.ttsArticle = null; render(); };
+  ttsUtterance.onerror = () => { state.ttsArticle = null; render(); };
+
+  state.ttsArticle = articleId;
+  speechSynthesis.speak(ttsUtterance);
+  render();
+  showToast('🔊 Reading article aloud...');
+}
+
+// ══════════════════════════════════════════════════════════
+//  VOICE SEARCH (Web Speech API)
+// ══════════════════════════════════════════════════════════
+let voiceRecognition = null;
+
+function startVoiceSearch() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    showToast('❌ Voice search not supported in this browser.');
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  voiceRecognition = new SR();
+  voiceRecognition.lang = state.lang === 'ta' ? 'ta-IN' : 'en-IN';
+  voiceRecognition.interimResults = false;
+  voiceRecognition.maxAlternatives = 1;
+
+  voiceRecognition.onresult = e => {
+    const q = e.results[0][0].transcript;
+    state.searchQuery = q;
+    const inp = document.getElementById('searchInput');
+    if (inp) inp.value = q;
+    loadArticles(true);
+    showToast('🎤 Searching: "' + q + '"');
+  };
+  voiceRecognition.onerror = () => showToast('🎤 Voice search failed. Try again.');
+  voiceRecognition.onend = () => {
+    document.querySelector('.voice-btn')?.classList.remove('listening');
+  };
+
+  voiceRecognition.start();
+  document.querySelector('.voice-btn')?.classList.add('listening');
+  showToast('🎤 Listening...');
+}
+
+// ══════════════════════════════════════════════════════════
+//  RENDER ENGINE
+// ══════════════════════════════════════════════════════════
+function render() {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = now.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+
+  document.getElementById('app').innerHTML = `
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo" onclick="setTab('All')">READVERSE<span>your world · summarized</span></div>
+    <div class="header-center">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" type="text" placeholder="Search live news..."
+        value="${escHtml(state.searchQuery)}"
+        oninput="debounceSearch(this.value)"
+        onkeydown="if(event.key==='Enter'){onSearch(this.value)}">
+      <button class="voice-btn" onclick="startVoiceSearch()" title="Voice search">🎤</button>
+    </div>
+    <div class="header-right">
+      <span class="live-dot"></span>
+      <span style="font-size:11px;color:rgba(255,255,255,.7)">LIVE</span>
+      <button class="hbtn lang-btn" onclick="toggleLang()">${state.lang === 'ta' ? 'EN' : 'தமிழ்'}</button>
+      <button class="hbtn" onclick="toggleDark()">${state.darkMode ? '☀️' : '🌙'}</button>
+      ${state.user
+        ? `<button class="hbtn active-user" onclick="doLogout()">👤 ${state.user.name.split(' ')[0]}</button>`
+        : `<button class="hbtn" onclick="openModal()">Sign In</button>`}
+    </div>
+  </div>
+
+  <!-- BREAKING TICKER -->
+  ${state.breakingTicker.length ? `
+  <div class="ticker-bar">
+    <div class="ticker-inner">
+      <span class="ticker-label">BREAKING</span>
+      ${[...state.breakingTicker, ...state.breakingTicker].map(a =>
+        `<span class="ticker-item" onclick="window.open('${escHtml(a.url)}','_blank')">${escHtml(a.title)}</span><span>·</span>`
+      ).join('')}
+    </div>
+  </div>` : ''}
+
+  <!-- NAV -->
+  <div class="nav">
+    ${TABS.map(tab => `
+      <button class="nav-tab${state.activeTab===tab?' active':''}${tab==='Breaking'?' breaking-tab':''}"
+        onclick="setTab('${tab}')">
+        ${t(tab)}
+        ${tab==='Bookmarks'&&state.bookmarks.length?`<span class="tab-badge">${state.bookmarks.length}</span>`:''}
+        ${tab==='Breaking'&&state.stats.breaking?`<span class="tab-badge" style="background:var(--coral)">${state.stats.breaking}</span>`:''}
+      </button>`).join('')}
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="main-layout">
+    <div class="feed-col">
+
+      <!-- DAILY BRIEF -->
+      ${state.activeTab !== 'Daily Brief' && state.articles.length >= 5 ? `
+      <div class="brief-bar">
+        <div class="brief-header">
+          <div class="brief-title"><span class="pulse-dot"></span>Daily Brief · Top Stories</div>
+          <span class="brief-date">${dateStr} · ${timeStr}</span>
+        </div>
+        <div class="brief-items">
+          ${state.articles.slice(0,5).map((a,i) => `
+            <div class="brief-item" onclick="window.open('${escHtml(a.url)}','_blank')">
+              <span class="brief-num">${i+1}</span>
+              <span class="brief-text">${escHtml(a.title)}</span>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      <div class="filters-row">
+        <h2>${state.searchQuery ? `Results for "${escHtml(state.searchQuery)}"` : t(state.activeTab)}</h2>
+        <div class="filter-controls">
+          <select class="sort-select" onchange="sortBy(this.value)">
+            <option value="time">Most Recent</option>
+            <option value="trending">Trending</option>
+            <option value="cat">By Category</option>
+          </select>
+          <button class="refresh-btn" onclick="hardRefresh()">↺ Refresh</button>
+        </div>
+      </div>
+
+      <!-- ARTICLE CARDS -->
+      ${state.articles.length === 0 && !state.loading
+        ? `<div class="empty-state">
+             <div class="empty-icon">${state.searchQuery ? '🔍' : '📡'}</div>
+             <div class="empty-title">${state.searchQuery ? 'No results found' : 'Loading live news...'}</div>
+             <div class="empty-sub">${state.searchQuery ? 'Try a different term' : 'Fetching from 25+ global sources'}</div>
+           </div>`
+        : `<div class="cards-grid" id="cardsGrid">
+             ${state.articles.map((a, i) => cardHTML(a, i * 40)).join('')}
+           </div>`}
+
+      <!-- INFINITE SCROLL TRIGGER -->
+      <div id="loadMore"><div class="spinner"></div></div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar-col">${sidebarHTML()}</div>
+  </div>`;
+
+  // Re-attach infinite scroll observer
+  setupInfiniteScroll();
+}
+
+// ── Render a single news card ─────────────────────────────
+function cardHTML(a, delay = 0) {
+  const id     = a._id || a.id || '';
+  const isBook = state.bookmarks.includes(id);
+  const aiOpen = !!state.aiOpen[id];
+  const isTTS  = state.ttsArticle === id;
+  const cred   = a.credibilityScore || 0;
+  const credClass = cred >= 75 ? 'cred-high' : cred >= 45 ? 'cred-mid' : 'cred-low';
+  const credLabel = cred >= 75 ? '✓ Credible' : cred >= 45 ? '~ Mixed' : '⚠ Unverified';
+  const sentClass = a.sentiment?.label === 'positive' ? 'sent-positive' : a.sentiment?.label === 'negative' ? 'sent-negative' : 'sent-neutral';
+  const age   = timeAgo(a.publishedAt);
+
+  return `
+<div class="card" style="animation-delay:${delay}ms;--cat-color:${catColor(a.category)}">
+  <div class="card-top">
+    <span class="cat-badge ${badgeClass(a.category)}">${a.isBreaking ? '🔴 Breaking' : a.category}</span>
+    <div class="card-meta">
+      <span class="sent-dot ${sentClass}" title="Sentiment: ${a.sentiment?.label || 'neutral'}"></span>
+      <span class="cred-badge ${credClass}">${credLabel}</span>
+      ${a.isTrending ? '<span class="trending-chip">🔥 Trending</span>' : ''}
+      <span>${escHtml(a.source)}</span>
+      <span>·</span>
+      <span>${age}</span>
+      ${a.summary?.readingTime ? `<span class="read-time">📖 ${a.summary.readingTime}m</span>` : ''}
+    </div>
+  </div>
+
+  ${a.imageUrl ? `<img class="card-img" src="${escHtml(a.imageUrl)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+
+  <a class="card-title" href="${escHtml(a.url)}" target="_blank" rel="noopener"
+    onclick="trackView('${id}')">${highlightText(escHtml(a.title))}</a>
+  <div class="card-desc">${highlightText(escHtml((a.description || '').slice(0, 200)))}</div>
+
+  <div class="card-actions" style="position:relative">
+    <button class="action-btn ${isBook ? 'bookmarked' : ''}" onclick="toggleBookmark('${id}')">
+      ${isBook ? '🔖 Saved' : '🔖 Save'}
+    </button>
+    <button class="action-btn ai-btn ${aiOpen ? 'ai-active' : ''}" onclick="toggleAIPanel('${id}')">
+      ✦ ${aiOpen ? 'Hide' : 'AI Summary'}
+    </button>
+    <button class="action-btn tts-btn ${isTTS ? 'playing' : ''}" onclick="toggleTTS('${id}')"
+      title="Read aloud">
+      ${isTTS ? '🔊 Stop' : '🔊 Listen'}
+    </button>
+    <a class="source-link" href="${escHtml(a.url)}" target="_blank" rel="noopener">
+      Full story →
+    </a>
+    <button class="action-btn" onclick="shareArticle('${id}')">⬆ Share</button>
+    ${state.shareOpen === id ? sharePopup(a) : ''}
+  </div>
+
+  ${aiOpen ? aiPanelHTML(a) : ''}
+</div>`;
+}
+
+// ── AI Summary Panel ──────────────────────────────────────
+function aiPanelHTML(a) {
+  const s = a.summary || {};
+  if (!s.quickRead && !s.bullets?.length) return '';
+  return `
+<div class="ai-panel">
+  <div class="ai-panel-title">✦ AI Summary · Local Engine · No API</div>
+  ${s.quickRead ? `<div class="quick-read-box"><div class="quick-read-label">Quick Read</div><div class="quick-read-text">${escHtml(s.quickRead)}</div></div>` : ''}
+  ${s.bullets?.length ? `<div class="ai-bullets">${s.bullets.map(b => `<div class="ai-bullet"><span class="ai-bullet-dot">→</span>${escHtml(b)}</div>`).join('')}</div>` : ''}
+  ${s.whyMatters ? `<div class="why-matters"><div class="why-label">Why It Matters</div><div class="why-text">${escHtml(s.whyMatters)}</div></div>` : ''}
+  ${s.keywords?.length ? `<div style="margin-top:10px;font-size:10px;color:var(--text3)">Keywords: ${s.keywords.map(k=>`<span style="background:var(--bg3);padding:2px 6px;border-radius:10px;margin:2px;display:inline-block">${escHtml(k)}</span>`).join('')}</div>` : ''}
+</div>`;
+}
+
+// ── Share popup ───────────────────────────────────────────
+function sharePopup(a) {
+  const encoded = encodeURIComponent(a.url);
+  const text    = encodeURIComponent(a.title);
+  return `
+<div class="share-popup">
+  <button class="share-option" onclick="window.open('https://wa.me/?text=${text}%20${encoded}','_blank')">💬 WhatsApp</button>
+  <button class="share-option" onclick="window.open('https://t.me/share/url?url=${encoded}&text=${text}','_blank')">✈️ Telegram</button>
+  <button class="share-option" onclick="window.open('https://twitter.com/intent/tweet?url=${encoded}&text=${text}','_blank')">𝕏 Twitter</button>
+  <button class="share-option" onclick="copyLink('${escHtml(a.url)}')">🔗 Copy Link</button>
+</div>`;
+}
+
+// ── Sidebar ───────────────────────────────────────────────
+function sidebarHTML() {
+  return `
+  <!-- WEATHER -->
+  <div class="sidebar-section">
+    <div class="sidebar-title">🌤 Weather</div>
+    ${state.weather ? `
+    <div class="weather-card">
+      <div style="overflow:hidden">
+        <span class="weather-icon">${state.weather.icon}</span>
+        <div class="weather-loc">📍 ${state.weather.loc}</div>
+        <div class="weather-temp">${state.weather.temp}°C</div>
+        <div class="weather-desc">${state.weather.desc}</div>
+        <div class="weather-meta">
+          <span>💧 ${state.weather.humidity}%</span>
+          <span>💨 ${state.weather.wind} km/h</span>
+        </div>
+      </div>
+    </div>` : '<div style="font-size:12px;color:var(--text3);padding:12px 0">Loading weather...</div>'}
+  </div>
+
+  <!-- TRENDING -->
+  <div class="sidebar-section">
+    <div class="sidebar-title">🔥 Trending Now</div>
+    <div class="trending-list">
+      ${state.trendingList.length
+        ? state.trendingList.map((a, i) => `
+          <div class="trending-item" onclick="window.open('${escHtml(a.url)}','_blank')">
+            <span class="trending-rank">${i+1}</span>
+            <span class="trending-text">${escHtml(a.title.slice(0, 70))}${a.title.length > 70 ? '…' : ''}</span>
+          </div>`).join('')
+        : '<div style="font-size:12px;color:var(--text3)">Loading trends...</div>'}
+    </div>
+  </div>
+
+  <!-- MARKET PULSE -->
+  ${state.stocks?.length ? `
+  <div class="sidebar-section">
+    <div class="sidebar-title">📈 Market Pulse</div>
+    ${state.stocks.map(s => `
+    <div class="stock-row">
+      <span class="stock-name">${s.name}</span>
+      <span class="${s.up ? 'stock-up' : 'stock-down'}">${s.price} ${s.up ? '▲' : '▼'} ${Math.abs(s.change)}%</span>
+    </div>`).join('')}
+  </div>` : ''}
+
+  <!-- MY INTERESTS -->
+  <div class="sidebar-section">
+    <div class="sidebar-title">⭐ My Interests</div>
+    <div class="pref-tags">
+      ${['Technology','Business','Sports','Health','Entertainment','World','Science','Tamil Nadu','Cricket','Crypto'].map(cat => `
+      <button class="pref-tag ${state.prefs.includes(cat)?'active':''}" onclick="togglePref('${cat}')">
+        ${t(cat)}
+      </button>`).join('')}
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="sidebar-section">
+    <div class="sidebar-title">📊 Live Stats</div>
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-num">${state.stats.total || state.articles.length}</div><div class="stat-lbl">Articles</div></div>
+      <div class="stat-box"><div class="stat-num">${state.stats.breaking || 0}</div><div class="stat-lbl">Breaking</div></div>
+      <div class="stat-box"><div class="stat-num">25+</div><div class="stat-lbl">Sources</div></div>
+      <div class="stat-box"><div class="stat-num">${state.bookmarks.length}</div><div class="stat-lbl">Saved</div></div>
+    </div>
+  </div>`;
+}
+
+// ── Skeleton loaders while fetching ──────────────────────
+function showSkeletons() {
+  const grid = document.getElementById('cardsGrid');
+  if (!grid) return;
+  grid.innerHTML = Array(4).fill(0).map(() => `
+    <div class="skeleton-card">
+      <div class="skel skel-h" style="width:80px"></div>
+      <div class="skel skel-title"></div>
+      <div class="skel skel-desc1"></div>
+      <div class="skel skel-desc2"></div>
+    </div>`).join('');
+}
+
+// ── Infinite scroll via IntersectionObserver ─────────────
+function setupInfiniteScroll() {
+  const sentinel = document.getElementById('loadMore');
+  if (!sentinel) return;
+  const observer = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && state.hasMore && !state.loading) {
+      sentinel.style.display = 'block';
+      loadArticles(false);
+    }
+  }, { threshold: 0.1 });
+  observer.observe(sentinel);
+}
+
+// ══════════════════════════════════════════════════════════
+//  EVENT HANDLERS
+// ══════════════════════════════════════════════════════════
+function setTab(tab) {
+  state.activeTab  = tab;
+  state.searchQuery = '';
+  state.shareOpen  = null;
+  state.aiOpen     = {};
+  render();
+  loadArticles(true);
+}
+
+let searchTimer = null;
+function debounceSearch(val) {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => onSearch(val), 400);
+}
+
+function onSearch(val) {
+  state.searchQuery = val.trim();
+  state.activeTab   = val ? 'All' : state.activeTab;
+  loadArticles(true);
+}
+
+function sortBy(val) {
+  state.sortMode = val;
+  if (val === 'cat') state.articles.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+  else if (val === 'trending') { state.activeTab = 'Trending'; loadArticles(true); return; }
+  else loadArticles(true);
+  render();
+}
+
+function toggleBookmark(id) {
+  const idx = state.bookmarks.indexOf(id);
+  if (idx === -1) {
+    state.bookmarks.push(id);
+    showToast('🔖 Saved to bookmarks');
+    // Also persist to server if logged in
+    if (state.token) apiFetch(`/bookmarks/${id}`, { method: 'POST' }).catch(() => {});
+  } else {
+    state.bookmarks.splice(idx, 1);
+    showToast('🗑 Removed from bookmarks');
+    if (state.token) apiFetch(`/bookmarks/${id}`, { method: 'DELETE' }).catch(() => {});
+  }
+  localStorage.setItem('rv_bookmarks', JSON.stringify(state.bookmarks));
+  render();
+}
+
+function toggleAIPanel(id) {
+  state.aiOpen[id] = !state.aiOpen[id];
+  render();
+}
+
+function togglePref(cat) {
+  const idx = state.prefs.indexOf(cat);
+  if (idx === -1) state.prefs.push(cat);
+  else state.prefs.splice(idx, 1);
+  localStorage.setItem('rv_prefs', JSON.stringify(state.prefs));
+  render();
+}
+
+function toggleDark() {
+  state.darkMode = !state.darkMode;
+  document.body.classList.toggle('dark', state.darkMode);
+  localStorage.setItem('rv_dark', state.darkMode);
+  render();
+}
+
+function toggleLang() {
+  state.lang = state.lang === 'en' ? 'ta' : 'en';
+  localStorage.setItem('rv_lang', state.lang);
+  loadArticles(true);
+}
+
+function shareArticle(id) {
+  state.shareOpen = state.shareOpen === id ? null : id;
+  render();
+}
+
+function copyLink(url) {
+  navigator.clipboard.writeText(url).then(() => showToast('🔗 Link copied!'));
+  state.shareOpen = null;
+  render();
+}
+
+function trackView(id) {
+  if (id) apiFetch(`/search/view/${id}`, { method: 'POST' }).catch(() => {});
+}
+
+async function hardRefresh() {
+  showToast('🔄 Fetching latest news...');
+  await loadArticles(true);
+  await Promise.all([loadBreaking(), loadTrending()]);
+  render();
+  showToast('✅ News updated!');
+}
+
+// ══════════════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════════════
+function openModal() { document.getElementById('authOverlay').classList.add('open'); }
+function closeModal() { document.getElementById('authOverlay').classList.remove('open'); }
+function switchAuthTab(tab) {
+  document.getElementById('loginForm').style.display  = tab === 'login'  ? '' : 'none';
+  document.getElementById('signupForm').style.display = tab === 'signup' ? '' : 'none';
+  document.getElementById('loginTab').classList.toggle('active',  tab === 'login');
+  document.getElementById('signupTab').classList.toggle('active', tab === 'signup');
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPass').value;
+  const msg = document.getElementById('loginMsg');
+  msg.innerHTML = '';
+  try {
+    const data = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    state.user  = data.user;
+    state.token = data.token;
+    localStorage.setItem('rv_user', JSON.stringify(data.user));
+    localStorage.setItem('rv_token', data.token);
+    closeModal();
+    showToast(`👋 Welcome back, ${data.user.name.split(' ')[0]}!`);
+    render();
+  } catch (err) {
+    msg.innerHTML = `<div class="form-msg error">${err.message}</div>`;
+  }
+}
+
+async function doSignup() {
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPass').value;
+  const msg = document.getElementById('signupMsg');
+  msg.innerHTML = '';
+  try {
+    const data = await apiFetch('/auth/signup', { method: 'POST', body: JSON.stringify({ name, email, password }) });
+    state.user  = data.user;
+    state.token = data.token;
+    localStorage.setItem('rv_user', JSON.stringify(data.user));
+    localStorage.setItem('rv_token', data.token);
+    closeModal();
+    showToast(`🎉 Account created! Welcome, ${data.user.name.split(' ')[0]}!`);
+    render();
+  } catch (err) {
+    msg.innerHTML = `<div class="form-msg error">${err.message}</div>`;
+  }
+}
+
+function doLogout() {
+  state.user = null;
+  state.token = '';
+  localStorage.removeItem('rv_user');
+  localStorage.removeItem('rv_token');
+  showToast('👋 Signed out.');
+  render();
+}
+
+// ══════════════════════════════════════════════════════════
+//  UTILITY FUNCTIONS
+// ══════════════════════════════════════════════════════════
+function escHtml(str = '') {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function highlightText(text) {
+  const q = state.searchQuery.trim();
+  if (!q) return text;
+  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  return text.replace(re, '<span class="highlight">$1</span>');
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1)  return 'Just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+function catColor(cat) {
+  const map = {
+    Technology:'#6d28d9',Business:'#065f46',Sports:'#991b1b',
+    Health:'#14532d',Entertainment:'#713f12','Tamil Nadu':'#7c3aed',
+    World:'#0369a1',Science:'#713f12',Cricket:'#9d174d',Crypto:'#c2410c',
+  };
+  return map[cat] || '#1a56db';
+}
+
+function showToast(msg, dur = 3000) {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), dur);
+}
+
+// ══════════════════════════════════════════════════════════
+//  SERVICE WORKER (PWA offline mode)
+// ══════════════════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+
+// ══════════════════════════════════════════════════════════
+//  OFFLINE DETECTION
+// ══════════════════════════════════════════════════════════
+window.addEventListener('online',  () => { document.body.classList.remove('offline'); showToast('🟢 Back online!'); hardRefresh(); });
+window.addEventListener('offline', () => { document.body.classList.add('offline');    showToast('📵 You\'re offline. Showing cached news.'); });
+
+// ══════════════════════════════════════════════════════════
+//  CLOSE HANDLERS
+// ══════════════════════════════════════════════════════════
+document.addEventListener('click', e => {
+  if (state.shareOpen !== null && !e.target.closest('.share-btn') && !e.target.closest('.share-popup')) {
+    state.shareOpen = null; render();
+  }
+});
+document.getElementById('authOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// ══════════════════════════════════════════════════════════
+//  AUTO-REFRESH every 15 minutes
+// ══════════════════════════════════════════════════════════
+setInterval(() => {
+  showToast('🔄 Checking for new stories…');
+  loadArticles(true);
+  loadBreaking();
+  loadTrending();
+}, 15 * 60 * 1000);
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+async function init() {
+  render(); // render skeleton immediately
+  await Promise.all([
+    loadArticles(true),
+    loadBreaking(),
+    loadTrending(),
+    fetchWeather(),
+    fetchStocks(),
+  ]);
+  // Get stats for sidebar
+  try {
+    const cats = await apiFetch('/categories');
+    state.stats.total = cats.reduce((s, c) => s + c.count, 0);
+    state.stats.breaking = (await apiFetch('/breaking')).length;
+  } catch {}
+  render();
+  cacheArticles(state.articles);
+}
+
+init();
+</script>
+</body>
+</html>
